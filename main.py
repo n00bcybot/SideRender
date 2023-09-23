@@ -19,3 +19,5 @@ for number in range(start_frame, end_frame + 1, step):
     cmds.arnoldRender(cam=camera_name, seq=number)
 
 maya.standalone.uninitialize()
+
+# sfsdfsfsdfdsf
