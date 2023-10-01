@@ -12,4 +12,3 @@ cmds.camera(name="asfda")
 cmds.SaveScene()
 cmds.quit()
 maya.standalone.uninitialize()
-
