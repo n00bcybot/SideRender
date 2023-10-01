@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="Black">
+    <option name="sdkUUID" value="f01d404c-3fa7-4a91-93f7-e504d7f6b084" />
+  </component>
   <component name="ProjectRootManager" version="2" project-jdk-name="Maya Python 3.10" project-jdk-type="Python SDK" />
 </project>
