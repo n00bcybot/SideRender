@@ -48,3 +48,4 @@ cmds.file(save=True, type="mayaAscii")
 # Quit
 cmds.quit()
 maya.standalone.uninitialize()
+
