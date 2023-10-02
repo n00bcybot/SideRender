@@ -47,7 +47,8 @@ class MainWindow(QMainWindow):
         # --------------------------------------------------------------------
         self.make_cam_button = QPushButton("Make Camera")
         self.make_cam_button.setCheckable(False)
-        self.make_cam_button.clicked.connect(lambda: self.MakeCamera(self.camera_name_textbox.text()))
+        # self.make_cam_button.clicked.connect(lambda: self.MakeCamera(self.camera_name_textbox.text()))
+        self.make_cam_button.clicked.connect(lambda: self.startRender())
 
 
         # Create grid style main layout
@@ -67,10 +68,14 @@ class MainWindow(QMainWindow):
         cmds.camera(name=camera_name)
         cmds.rename(camera_name + '1', camera_name)
 
+    def startRender(self):
+        with open("main.py") as f:
+            exec(f.read())
 
-# myApp = QApplication()
+
+myApp = QApplication()
 window = MainWindow()
 window.show()
 
-# myApp.exec_()
-# sys.exit(0)
+myApp.exec_()
+sys.exit(0)

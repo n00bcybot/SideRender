@@ -1,9 +1,17 @@
 import os
 import maya.standalone
+import multiprocessing
+
+def startRender(start, end, by_step):
+    for number in range(start, end + 1, by_step):
+        cmds.arnoldRender(cam=camera_name, seq=number)
+
+start_frame = 10    # Textbox eventually
+end_frame = 40      # Textbox eventually
+step = 4   # Number of processors to create a step. This should only be included when multiprocessing. Dropdown perhaps
 
 maya.standalone.initialize()
 import maya.cmds as cmds
-import mtoa.utils as mutils
 
 # Set preferences folder
 prefs_folder = os.path.expanduser("~\\Documents\\maya\\2024\\prefs")
@@ -25,26 +33,21 @@ file_to_render = "%USERPROFILE%\\Desktop\\maya\\rendertest\\test.ma"     # "Brow
 cmds.file(file_to_render, o=True)   # "Browse button"
 
 # ---------------------------------------------------------------------------------------------------------------------
+# Set file name
+cmds.setAttr("defaultRenderGlobals.imageFilePrefix", "C:\\Users\\fresh\\Desktop\\maya\\rendertest\\render\\hhh", type="string")
 
-cmds.setAttr("defaultRenderGlobals.imageFilePrefix", "C:\\Users\\fresh\\Desktop\\maya\\rendertest\\render\\hhh", type = "string")
-cmds.setAttr("defaultArnoldRenderOptions.skipLicenseCheck", 1)  # Skip license check. It reduces rendering time
-
-play_end = cmds.playbackOptions(q=True, maxTime=True)   # Returns integer (the frame number)
-play_start = cmds.playbackOptions(q=True, minTime=True)
+# Skip license check. It reduces rendering time, useful for quick preview rendering
+cmds.setAttr("defaultArnoldRenderOptions.skipLicenseCheck", 1)
 
 camera_name = "persp"   # Dropdown. Get list from scene
-start_frame = 30    # Textbox eventually
-end_frame = 40      # Textbox eventually
-step = 2   # Number of processors to create a step. This should only be included when multiprocessing. Dropdown perhaps
-
-for number in range(start_frame, end_frame + 1, step):
-    cmds.arnoldRender(cam=camera_name, seq=number)
-
 # ---------------------------------------------------------------------------------------------------------------------
 
-# Save file
-cmds.file(save=True, type="mayaAscii")
+processes = []
+if __name__ == '__main__':
 
-# Quit
-cmds.quit()
-maya.standalone.uninitialize()
+    for i in range(4):
+        process = multiprocessing.Process(target=startRender, args=(start_frame + i, end_frame, step))
+        processes.append(process)
+
+    for process in processes:
+        process.start()
