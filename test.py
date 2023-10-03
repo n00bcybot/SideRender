@@ -1,40 +1,48 @@
-import subprocess
-import multiprocessing
-import concurrent.futures
+import maya.cmds as cmds
 
-# Replace 'my_script.py' with the actual path to your Python script
-python_script = 'main.py'
+from PySide2.QtWidgets import (QApplication, QLabel, QMainWindow, QGroupBox, QHBoxLayout, QComboBox, QWidget,
+                               QGridLayout, QPushButton, QLineEdit, QFileDialog, QVBoxLayout)
+from PySide2.QtGui import QFont, QIcon
+from PySide2 import QtCore
+import sys
+class MyWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
 
-# Specify the parameters as a list
-start = str(10)
-end = str(40)
-step = str(6)
+        self.initUI()
+
+    def initUI(self):
+        self.setWindowTitle('File Path Selector')
+
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+
+        layout = QVBoxLayout()
+        central_widget.setLayout(layout)
+
+        self.file_path_line_edit = QLineEdit(self)
+        layout.addWidget(self.file_path_line_edit)
+
+        select_file_button = QPushButton('Select File', self)
+        select_file_button.clicked.connect(self.openFileDialog)
+        layout.addWidget(select_file_button)
+
+    def openFileDialog(self):
+        options = QFileDialog.Options()
+        file_dialog = QFileDialog(self, options=options)
+        file_dialog.setNameFilter('All Files (*)')
+
+        if file_dialog.exec_() == QFileDialog.Accepted:
+            selected_files = file_dialog.selectedFiles()
+            if selected_files:
+                file_path = selected_files[0]
+                self.file_path_line_edit.setText(file_path)
 
 
-
-def startRender():
-
-    for i in range(6):
-        start_frame = int(start) + i
-        parameters = [str(start_frame), end, step]
-        try:
-            # Use subprocess.run() to run the Python script with parameters
-            subprocess.run(['powershell', f'mayapy {python_script}'] + parameters, check=True)
-        except subprocess.CalledProcessError as e:
-            print(f"Error: {e}")
-        print(parameters)
-
-# with concurrent.futures.ProcessPoolExecutor() as executor:
-#     for i in range(6):
-#         start = i + int(start)
-#         executor.map(startRender(str(start), end, step))
-processes = []
 if __name__ == '__main__':
-    # Create two separate processes to open Notepad windows
-    for _ in range(6):
-        process = multiprocessing.Process(target=startRender)
-        processes.append(process)
+    app = QApplication([])
+    window = MyWindow()
+    window.show()
+    app.exec_()
 
-    for process in processes:
-        process.start()
 
