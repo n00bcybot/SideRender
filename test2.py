@@ -5,52 +5,12 @@ import multiprocessing
 import maya.cmds as cmds
 import subprocess
 from PySide2.QtWidgets import (QApplication, QLabel, QMainWindow, QWidget, QGridLayout, QPushButton, QLineEdit,
-                               QFileDialog)
+                               QFileDialog, QComboBox)
 from PySide2.QtGui import QFont, QIcon
 sys.path.append('C:\\Program Files\\Autodesk\\Arnold\\maya2024\\scripts')
 
 
-# class RenderLogic:
-#
-#     def __int__(self, start_frame, end_frame, step, file_to_render, render_folder, frame_name, camera_name):
-#
-#         prefs_folder = os.path.expanduser("~\\Documents\\maya\\2024\\prefs")
-#         cmds.workspace(prefs_folder, openWorkspace=True)
-#         cmds.setAttr("defaultRenderGlobals.imageFilePrefix", (render_folder + frame_name), type="string")
-#         mtoa_path = "C:\Program Files\Autodesk\Arnold\maya2024\plug-ins\mtoa.mll"
-#         cmds.loadPlugin(mtoa_path)
-#
-#         self.start_frame = start_frame
-#         self.end_frame = end_frame
-#         self.step = step
-#         self.mtoa_path = mtoa_path
-#         self.file_to_render = file_to_render
-#         self.render_folder = render_folder
-#         self.frame_name = frame_name
-#         self.camera_name = camera_name
-#
-#     def startRender(self, start, end, by_step):
-#         for number in range(start, end + 1, by_step):
-#             cmds.arnoldRender(cam=self.camera_name, seq=number)
-#
-#     def multiRender(self):
-#         processes = []
-#         for i in range(self.step):
-#             process = multiprocessing.Process(target=self.startRender,
-#                                               args=(self.start_frame + i, self.end_frame, self.step))
-#             processes.append(process)
-#         for process in processes:
-#             process.start()
-#
-#     def sequenceRender(self):
-#         self.startRender(self.start_frame, self.end_frame, self.step)
-#
-#     @staticmethod
-#     def skiplicenseCheck(skip=True):
-#         if skip:
-#             cmds.setAttr("defaultArnoldRenderOptions.skipLicenseCheck", 1)
-#
-# # ----------------------------------------------------------------------------------------------------------------
+
 
 
 class MainWindow(QMainWindow):
@@ -105,11 +65,44 @@ class MainWindow(QMainWindow):
         self.label_end_frame.setFont(self.font_tuka)
         self.label_end_frame.setToolTip("Enter the last frame number to render")
 
+        # Label file name
+        # -----------------------------------------------------------------------------------------------------------
+        self.label_file_name = QLabel(self)
+        self.label_file_name.setText("Output name")
+        self.label_file_name.setBaseSize(100, 50)
+        self.label_file_name.setFont(self.font_tuka)
+        self.label_file_name.setToolTip("Set file name")
+
+        # Label dropbox camera
+        # -----------------------------------------------------------------------------------------------------------
+        self.label_dropbox_camera = QLabel(self)
+        self.label_dropbox_camera.setText("Select camera")
+        self.label_dropbox_camera.setBaseSize(100, 50)
+        self.label_dropbox_camera.setFont(self.font_tuka)
+        self.label_dropbox_camera.setToolTip("Select Camera")
+
+        # Label render type
+        # -----------------------------------------------------------------------------------------------------------
+        self.label_render_type = QLabel(self)
+        self.label_render_type.setText("Render type")
+        self.label_render_type.setBaseSize(100, 50)
+        self.label_render_type.setFont(self.font_tuka)
+        self.label_render_type.setToolTip("Select render type")
+
+        # Label use cores
+        # -----------------------------------------------------------------------------------------------------------
+        self.label_use_cores = QLabel(self)
+        self.label_use_cores.setText("Utilize cores")
+        self.label_use_cores.setBaseSize(100, 50)
+        self.label_use_cores.setFont(self.font_tuka)
+        self.label_use_cores.setToolTip("Select number of cores to utilize")
+
         # File path textbox
         # --------------------------------------------------------------------
         self.textbox_file_path = QLineEdit()
         self.textbox_file_path.setMaximumWidth(300)
         self.textbox_file_path.setMinimumSize(200, 23)
+        self.textbox_file_path.textChanged.connect(self.getCamerasList)
 
         # Folder path textbox
         # --------------------------------------------------------------------
@@ -128,6 +121,12 @@ class MainWindow(QMainWindow):
         self.textbox_end_frame = QLineEdit()
         self.textbox_end_frame.setMaximumWidth(300)
         self.textbox_end_frame.setMinimumSize(50, 23)
+
+        # Output file name textbox
+        # --------------------------------------------------------------------
+        self.textbox_file_name = QLineEdit()
+        self.textbox_file_name.setMaximumWidth(300)
+        self.textbox_file_name.setMinimumSize(50, 23)
 
         # Browse file button
         # --------------------------------------------------------------------
@@ -162,6 +161,22 @@ class MainWindow(QMainWindow):
         self.file_dialog_select_folder = QFileDialog(self)
         self.file_dialog_select_folder.setFileMode(QFileDialog.DirectoryOnly)
 
+        # Select camera
+        # --------------------------------------------------------------------
+        self.dropbox_camera = QComboBox(self)
+
+        # Select render type
+        # --------------------------------------------------------------------
+        self.dropbox_render_type = QComboBox(self)
+        self.dropbox_render_type.addItem("Multiprocess")
+        self.dropbox_render_type.addItem("Sequence")
+
+        # Select number of cores
+        # --------------------------------------------------------------------
+        self.dropbox_cores = QComboBox(self)
+        self.dropbox_cores.addItems(self.getCoreCount())
+
+
         # Create grid style main layout
         # -----------------------------------------------------------------------------------------------------------
         self.main_layout = QGridLayout()
@@ -175,7 +190,15 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.textbox_start_frame, 2, 1)
         self.main_layout.addWidget(self.label_end_frame, 3, 0)
         self.main_layout.addWidget(self.textbox_end_frame, 3, 1)
-        self.main_layout.addWidget(self.button_start, 4, 0)
+        self.main_layout.addWidget(self.label_file_name, 4, 0)
+        self.main_layout.addWidget(self.textbox_file_name, 4, 1)
+        self.main_layout.addWidget(self.label_dropbox_camera, 5, 0)
+        self.main_layout.addWidget(self.dropbox_camera, 5, 1)
+        self.main_layout.addWidget(self.label_render_type, 6, 0)
+        self.main_layout.addWidget(self.dropbox_render_type, 6, 1)
+        self.main_layout.addWidget(self.label_use_cores, 7, 0)
+        self.main_layout.addWidget(self.dropbox_cores, 7, 1)
+        self.main_layout.addWidget(self.button_start, 8, 0)
 
         # Add the main layout to window
         # -----------------------------------------------------------------------------------------------------------
@@ -194,17 +217,40 @@ class MainWindow(QMainWindow):
             selected_folder = self.file_dialog_select_folder.getExistingDirectory(self, "Select a Directory")
             if selected_folder:
                 self.textbox_folder_path.setText(selected_folder)
+
+    def getCamerasList(self):
+        maya.standalone.initialize()
+        import maya.cmds as cmds
+        cmds.file(self.textbox_file_path.text(), o=True)
+        cameras_list = cmds.listCameras()
+        self.dropbox_camera.addItems(cameras_list)
+
+        for camera in cameras_list:
+            if cmds.getAttr(camera + '.renderable'):
+                self.dropbox_camera.setCurrentIndex(cameras_list.index(camera))
+
+    def getCoreCount(self):
+        core_count = [i + 1 for i in range(multiprocessing.cpu_count())]
+        core_count.reverse()
+        cores = []
+        for i in core_count:
+            cores.append(str(i))
+        return cores
+
+
+
     def startRender(self):
 
         param1 = self.textbox_start_frame.text()
         param2 = self.textbox_end_frame.text()
-        param3 = str(4)
+        param3 = self.dropbox_cores.currentText()
         param4 = self.textbox_file_path.text()
         param5 = self.textbox_folder_path.text()
-        param6 = "kjh"
-        param7 = "persp"
+        param6 = self.textbox_file_name.text()
+        param7 = self.dropbox_camera.currentText()
+        param8 = self.dropbox_render_type.currentText()
 
-        subprocess.call(["mayapy", "main.py", param1, param2, param3, param4, param5, param6, param7])
+        subprocess.call(["mayapy", "main.py", param1, param2, param3, param4, param5, param6, param7, param8])
 
 myApp = QApplication()
 window = MainWindow()

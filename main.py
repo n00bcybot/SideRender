@@ -66,6 +66,7 @@ param4 = sys.argv[4]
 param5 = sys.argv[5]
 param6 = sys.argv[6]
 param7 = sys.argv[7]
+param8 = sys.argv[8]
 
 
 class RenderLogic:
@@ -130,6 +131,13 @@ cmds.file(render.file_to_render, o=True)
 cmds.setAttr("defaultRenderGlobals.imageFilePrefix", (render.render_folder + '/' + render.frame_name), type="string")
 render.skiplicenseCheck(skip=True)
 
-render.sequenceRender()
+
+if param8 == "Multiprocess":
+    cmds.setAttr("defaultArnoldRenderOptions.threads_autodetect", 0)
+    cmds.setAttr("defaultArnoldRenderOptions.threads", render.step)
+    render.multiRender()
+elif param8 == "Sequence":
+    render.sequenceRender()
+
 
 cmds.quit()
