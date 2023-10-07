@@ -59,14 +59,14 @@ import multiprocessing
 #
 # # ---------------------------------------------------------------------------------------------------------------------
 
-param1 = sys.argv[1]
-param2 = sys.argv[2]
-param3 = sys.argv[3]
-param4 = sys.argv[4]
-param5 = sys.argv[5]
-param6 = sys.argv[6]
-param7 = sys.argv[7]
-param8 = sys.argv[8]
+param1 = sys.argv[1]  # Start frame
+param2 = sys.argv[2]  # End frame
+param3 = sys.argv[3]  # Number of cores
+param4 = sys.argv[4]  # File path
+param5 = sys.argv[5]  # Folder path
+param6 = sys.argv[6]  # File name
+param7 = sys.argv[7]  # Camera name
+param8 = sys.argv[8]  # Render type
 
 
 class RenderLogic:
