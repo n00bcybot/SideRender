@@ -7,10 +7,8 @@ import subprocess
 from PySide2.QtWidgets import (QApplication, QLabel, QMainWindow, QWidget, QGridLayout, QPushButton, QLineEdit,
                                QFileDialog, QComboBox)
 from PySide2.QtGui import QFont, QIcon
+
 sys.path.append('C:\\Program Files\\Autodesk\\Arnold\\maya2024\\scripts')
-
-
-
 
 
 class MainWindow(QMainWindow):
@@ -176,7 +174,6 @@ class MainWindow(QMainWindow):
         self.dropbox_cores = QComboBox(self)
         self.dropbox_cores.addItems(self.getCoreCount())
 
-
         # Create grid style main layout
         # -----------------------------------------------------------------------------------------------------------
         self.main_layout = QGridLayout()
@@ -219,32 +216,32 @@ class MainWindow(QMainWindow):
                 self.textbox_folder_path.setText(selected_folder)
 
     def getCamerasList(self):
-        # maya.standalone.initialize()
-        # import maya.cmds as cmds
-        #
-        # cmds.file(self.textbox_file_path.text(), o=True)
-        # cameras_list = cmds.listCameras()
-        # self.dropbox_camera.addItems(cameras_list)
-        #
-        # for camera in cameras_list:
-        #     if cmds.getAttr(camera + '.renderable'):
-        #         self.dropbox_camera.setCurrentIndex(cameras_list.index(camera))
+        maya.standalone.initialize()
+        import maya.cmds as cmds
 
-        param4 = self.textbox_file_path.text()
-        process = subprocess.Popen(["mayapy", "initializeFile.py", param4], stdout=subprocess.PIPE, text=True)
-        stdout, _ = process.communicate()
-        input_string = stdout
-        pattern = r"\*([^*]+)\*"
-        matches = re.findall(pattern, input_string)
-        pattern2 = r"'([^']+)'"
-
-        cameras_list = re.findall(pattern2, matches[0])
-        renderable_camera = matches[1]
+        cmds.file(self.textbox_file_path.text(), o=True)
+        cameras_list = cmds.listCameras()
         self.dropbox_camera.addItems(cameras_list)
 
         for camera in cameras_list:
-            if camera == renderable_camera:
+            if cmds.getAttr(camera + '.renderable'):
                 self.dropbox_camera.setCurrentIndex(cameras_list.index(camera))
+
+        # param4 = self.textbox_file_path.text()
+        # process = subprocess.Popen(["mayapy", "initializeFile.py", param4], stdout=subprocess.PIPE, text=True)
+        # stdout, _ = process.communicate()
+        # input_string = stdout
+        # pattern = r"\*([^*]+)\*"
+        # matches = re.findall(pattern, input_string)
+        # pattern2 = r"'([^']+)'"
+        #
+        # cameras_list = re.findall(pattern2, matches[0])
+        # renderable_camera = matches[1]
+        # self.dropbox_camera.addItems(cameras_list)
+
+        # for camera in cameras_list:
+        #     if camera == renderable_camera:
+        #         self.dropbox_camera.setCurrentIndex(cameras_list.index(camera))
 
     def getCoreCount(self):
         core_count = [i + 1 for i in range(multiprocessing.cpu_count())]
@@ -253,8 +250,6 @@ class MainWindow(QMainWindow):
         for i in core_count:
             cores.append(str(i))
         return cores
-
-
 
     def startRender(self):
 
@@ -267,7 +262,9 @@ class MainWindow(QMainWindow):
         param7 = self.dropbox_camera.currentText()
         param8 = self.dropbox_render_type.currentText()
 
-        subprocess.Popen(["powershell", "mayapy", "main.py", param1, param2, param3, param4, param5, param6, param7, param8])
+        subprocess.Popen(
+            ["powershell", "mayapy", "main.py", param1, param2, param3, param4, param5, param6, param7, param8])
+
 
 myApp = QApplication()
 window = MainWindow()
@@ -275,4 +272,3 @@ window.show()
 
 myApp.exec_()
 sys.exit(0)
-

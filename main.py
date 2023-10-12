@@ -1,8 +1,10 @@
 import os
 import sys
-
+import maya.cmds as cmds
 import maya.standalone
 import multiprocessing
+
+
 
 
 # def startRender(start, end, by_step):
@@ -59,19 +61,19 @@ import multiprocessing
 #
 # # ---------------------------------------------------------------------------------------------------------------------
 
-param1 = sys.argv[1]  # Start frame
-param2 = sys.argv[2]  # End frame
-param3 = sys.argv[3]  # Number of cores
-param4 = sys.argv[4]  # File path
-param5 = sys.argv[5]  # Folder path
-param6 = sys.argv[6]  # File name
-param7 = sys.argv[7]  # Camera name
-param8 = sys.argv[8]  # Render type
+# param1 = sys.argv[1]  # Start frame
+# param2 = sys.argv[2]  # End frame
+# param3 = sys.argv[3]  # Number of cores
+# param4 = sys.argv[4]  # File path
+# param5 = sys.argv[5]  # Folder path
+# param6 = sys.argv[6]  # File name
+# param7 = sys.argv[7]  # Camera name
+# param8 = sys.argv[8]  # Render type
 
 
 class RenderLogic:
 
-    def __int__(self, start_frame, end_frame, step, file_to_render, render_folder, frame_name, camera_name):
+    def __int__(self, start_frame, end_frame, step, file_to_render, render_folder, frame_name, camera_name, render_type):
 
         self.start_frame = start_frame
         self.end_frame = end_frame
@@ -80,7 +82,9 @@ class RenderLogic:
         self.render_folder = render_folder
         self.frame_name = frame_name
         self.camera_name = camera_name
-        self.mtoa_path = mtoa_path
+        self.render_type = render_type
+
+
 
     def startSequenceRender(self, start, end):
         for number in range(start, end + 1):
@@ -91,7 +95,8 @@ class RenderLogic:
             cmds.arnoldRender(cam=self.camera_name, seq=number)
 
     def multiRender(self):
-        if __name__ == '__main__':
+
+        if __name__ == "__main__":
             processes = []
             for i in range(self.step):
                 process = multiprocessing.Process(target=self.startMultiRender,
@@ -108,36 +113,37 @@ class RenderLogic:
         if skip:
             cmds.setAttr("defaultArnoldRenderOptions.skipLicenseCheck", 1)
 
+    def startRender(self):
+        maya.standalone.initialize()
+        import maya.cmds as cmds
 
-# ----------------------------------------------------------------------------------------------------------------
-render = RenderLogic()
-render.start_frame = int(param1)
-render.end_frame = int(param2)
-render.step = int(param3)
-render.file_to_render = param4
-render.render_folder = param5
-render.frame_name = param6
-render.camera_name = param7
+        prefs_folder = os.path.expanduser("~\\Documents\\maya\\2024\\prefs")
+        cmds.workspace(prefs_folder, openWorkspace=True)
+        mtoa_path = "C:\Program Files\Autodesk\Arnold\maya2024\plug-ins\mtoa.mll"
+        cmds.loadPlugin(mtoa_path)
 
+        cmds.file(self.file_to_render, o=True)
+        cmds.setAttr("defaultRenderGlobals.imageFilePrefix", (self.render_folder + '/' + self.frame_name),
+                     type="string")
+        self.skiplicenseCheck(skip=True)
 
-maya.standalone.initialize()
-import maya.cmds as cmds
+        if self.render_type == "Multiprocess":
+            cmds.setAttr("defaultArnoldRenderOptions.threads_autodetect", 0)
+            cmds.setAttr("defaultArnoldRenderOptions.threads", self.step)
+            self.multiRender()
+        elif self.render_type == "Sequence":
+            self.sequenceRender()
 
-mtoa_path = "C:\Program Files\Autodesk\Arnold\maya2024\plug-ins\mtoa.mll"
-cmds.loadPlugin(mtoa_path)
-prefs_folder = os.path.expanduser("~\\Documents\\maya\\2024\\prefs")
-cmds.workspace(prefs_folder, openWorkspace=True)
-cmds.file(render.file_to_render, o=True)
-cmds.setAttr("defaultRenderGlobals.imageFilePrefix", (render.render_folder + '/' + render.frame_name), type="string")
-render.skiplicenseCheck(skip=True)
+        # cmds.quit()
 
-
-if param8 == "Multiprocess":
-    cmds.setAttr("defaultArnoldRenderOptions.threads_autodetect", 0)
-    cmds.setAttr("defaultArnoldRenderOptions.threads", render.step)
-    render.multiRender()
-elif param8 == "Sequence":
-    render.sequenceRender()
-
-
-cmds.quit()
+# # ----------------------------------------------------------------------------------------------------------------
+# render = RenderLogic()
+# render.start_frame = int(param1)
+# render.end_frame = int(param2)
+# render.step = int(param3)
+# render.file_to_render = param4
+# render.render_folder = param5
+# render.frame_name = param6
+# render.camera_name = param7
+#
+#
